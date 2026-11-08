@@ -1,7 +1,6 @@
 package org.bionus.grabber;
 
 import android.content.ContentResolver;
-import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -22,7 +21,7 @@ import java.io.OutputStream;
 public final class MediaExporter {
     private MediaExporter() {}
 
-    public static int exportFile(Context context, String inputPath, String relative) {
+    public static synchronized int exportFile(Context context, String inputPath, String relative) {
         if (context == null || inputPath == null || relative == null) {
             return 0;
         }
@@ -54,7 +53,17 @@ public final class MediaExporter {
         }
         String mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
         if (mime == null) {
-            mime = "application/octet-stream";
+            if (extension.equals("avif")) {
+                mime = "image/avif";
+            } else if (extension.equals("jxl")) {
+                mime = "image/jxl";
+            } else if (extension.equals("apng")) {
+                mime = "image/apng";
+            } else if (extension.equals("webp")) {
+                mime = "image/webp";
+            } else {
+                mime = "application/octet-stream";
+            }
         }
 
         StringBuilder directory = new StringBuilder("Pictures/Grabber/");
