@@ -20,7 +20,7 @@
 
 #ifdef Q_OS_ANDROID
 #include <QJniObject>
-#include <QNativeInterface>
+#include <QtCore/private/qandroidextras_p.h>
 #endif
 
 namespace {
