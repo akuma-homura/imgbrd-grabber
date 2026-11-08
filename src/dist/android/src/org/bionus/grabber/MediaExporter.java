@@ -99,6 +99,10 @@ public final class MediaExporter {
             collection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
         } else if (mime.startsWith("video/")) {
             collection = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+            directory = new StringBuilder("Movies/Grabber/");
+            for (int i = 0; i < components.length - 1; i++) {
+                directory.append(components[i]).append('/');
+            }
         } else {
             // Non-image attachments should remain in Downloads; MediaStore
             // won't reliably accept arbitrary ZIP files in Pictures.
