@@ -257,6 +257,8 @@ void BatchDownloadController::cancel()
     m_cancelled = true;
     if (m_downloader != nullptr) {
         m_downloader->abort();
+        delete m_downloader;
+        m_downloader = nullptr;
     }
     m_batchFinished = true;
     m_status = QStringLiteral("Stopping");
