@@ -163,7 +163,7 @@ bool BatchDownloadController::start(const QString &siteUrl, const QString &query
     }
 
     if (m_downloader != nullptr) {
-        m_downloader->deleteLater();
+        delete m_downloader;
         m_downloader = nullptr;
     }
     m_query.reset();
