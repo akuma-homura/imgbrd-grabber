@@ -69,6 +69,7 @@ class BatchDownloader : public QObject
 		void stepChanged(BatchDownloadStep step);
 		void imageDownloadProgress(const QSharedPointer<Image> &img, qint64 bytesReceived, qint64 bytesTotal);
 		void imageDownloadFinished(const QSharedPointer<Image> &img, Image::SaveResult result);
+		void imageSaveFinished(const QSharedPointer<Image> &img, const QList<ImageSaveResult> &result);
 		void finished();
 
 	private:
