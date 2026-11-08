@@ -9,6 +9,8 @@
         <file>components/MiniRadioIndicator.qml</file>
         <file>components/SearchField.qml</file>
         <file>components/SearchScreen.qml</file>
+        <file>components/BatchDownloadDialog.qml</file>
+        <file>components/BatchTasksScreen.qml</file>
         <file>components/settings/Setting.qml</file>
         <file>components/settings/SettingsScreen.qml</file>
         <file>components/SourcesScreen.qml</file>

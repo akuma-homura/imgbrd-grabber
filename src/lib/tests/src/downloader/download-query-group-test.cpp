@@ -31,6 +31,8 @@ TEST_CASE("DownloadQueryGroup")
 		REQUIRE(b != c);
 		REQUIRE(c == c);
 		REQUIRE(c == d); // The progress status must NOT be checked
+		b.pageOnly = true;
+		REQUIRE(a != b); // Limiting to one page affects query equality
 	}
 
 	SECTION("Serialization")
@@ -38,6 +40,7 @@ TEST_CASE("DownloadQueryGroup")
 		SECTION("Basic")
 		{
 			DownloadQueryGroup original(QStringList() << "tags", 1, 2, 3, QStringList() << "postFiltering", true, site, "filename", "path");
+			original.pageOnly = true;
 			original.progressVal = 37;
 			original.progressFinished = false;
 
@@ -56,8 +59,20 @@ TEST_CASE("DownloadQueryGroup")
 			REQUIRE(dest.site == site);
 			REQUIRE(dest.filename == QString("filename"));
 			REQUIRE(dest.path == QString("path"));
+			REQUIRE(dest.pageOnly);
 			REQUIRE(dest.progressVal == 37);
 			REQUIRE(!dest.progressFinished);
+		}
+
+		SECTION("Legacy JSON without pageOnly")
+		{
+			DownloadQueryGroup original(QStringList() << "tags", 1, 20, 100, QStringList(), true, site, "file", "path");
+			QJsonObject json;
+			original.write(json);
+			json.remove("pageOnly");
+			DownloadQueryGroup restored;
+			REQUIRE(restored.read(json, &profile));
+			REQUIRE_FALSE(restored.pageOnly);
 		}
 
 		SECTION("With -1 total")

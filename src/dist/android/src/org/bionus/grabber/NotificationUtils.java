@@ -1,32 +1,36 @@
 package org.bionus.grabber;
 
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.BitmapFactory;
-import android.app.NotificationChannel;
+import android.graphics.Color;
+import android.os.Build;
+import androidx.core.app.NotificationCompat;
 
 public class NotificationUtils
 {
+    private static final String CHANNEL_ID = "org.bionus.grabber";
+
     public static void notify(Context context, String title, String message)
     {
-        NotificationManager m_notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-
-        Notification.Builder m_builder;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            int importance = NotificationManager.IMPORTANCE_DEFAULT;
-            NotificationChannel notificationChannel;
-            notificationChannel = new NotificationChannel("org.bionus.grabber", "Grabber", importance);
-            m_notificationManager.createNotificationChannel(notificationChannel);
-            m_builder = new Notification.Builder(context, notificationChannel.getId());
-        } else {
-            m_builder = new Notification.Builder(context);
+        NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (manager == null) {
+            return;
         }
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "Grabber", NotificationManager.IMPORTANCE_DEFAULT);
+            manager.createNotificationChannel(channel);
+        }
+
+        // NotificationCompat supplies the non-deprecated API on both old and
+        // new Android versions, including notification channel support.
         Bitmap icon = BitmapFactory.decodeResource(context.getResources(), R.drawable.icon);
-        m_builder.setSmallIcon(R.drawable.icon)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID);
+        builder.setSmallIcon(R.drawable.icon)
             .setLargeIcon(icon)
             .setContentTitle(title)
             .setContentText(message)
@@ -34,6 +38,6 @@ public class NotificationUtils
             .setColor(Color.GREEN)
             .setAutoCancel(true);
 
-        m_notificationManager.notify(0, m_builder.build());
+        manager.notify(0, builder.build());
     }
 }

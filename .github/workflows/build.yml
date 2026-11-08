@@ -1,6 +1,7 @@
 name: Build
 
 on:
+  workflow_dispatch:
   push:
     paths-ignore:
       - 'docs/**'
@@ -66,7 +67,7 @@ jobs:
           cd ..
           mkdir uncrustify_build
           cd uncrustify_build
-          cmake ../uncrustify_git
+          cmake ../uncrustify_git -DCMAKE_POLICY_VERSION_MINIMUM=3.5
           cmake --build .
           mkdir $GITHUB_WORKSPACE/bin
           cp uncrustify $GITHUB_WORKSPACE/bin
@@ -287,6 +288,8 @@ jobs:
 
   macos:
     name: macOS
+    # Preserve the upstream macOS job, but skip it on this Android-focused fork.
+    if: github.repository == 'Bionus/imgbrd-grabber'
     runs-on: macos-14
     needs: version
 
@@ -525,9 +528,15 @@ jobs:
     needs: version
 
     env:
+      # Qt configures additional ABI builds in independent CMake processes.
+      # Inherit the compatibility floor for bundled legacy CMake projects
+      # (notably lib/vendor/lexbor) in every nested build tree.
+      CMAKE_POLICY_VERSION_MINIMUM: '3.5'
       QT_VERSION: 6.10.3
       GRABBER_VERSION: ${{ needs.version.outputs.version }}
       GRABBER_IS_NIGHTLY: ${{ needs.version.outputs.nightly }}
+      # Forks without signing secrets should produce installable debug APKs.
+      ANDROID_BUILD_TYPE: ${{ github.repository == 'Bionus/imgbrd-grabber' && 'Release' || 'Debug' }}
 
     steps:
     - name: Checkout
@@ -573,7 +582,7 @@ jobs:
         cache: true
         version: ${{ env.QT_VERSION }}
         modules: ${{ env.QT_MODULES }}
-        host: linux
+        host: all_os
         target: android
         arch: android_armv7
 
@@ -583,7 +592,7 @@ jobs:
         cache: true
         version: ${{ env.QT_VERSION }}
         modules: ${{ env.QT_MODULES }}
-        host: linux
+        host: all_os
         target: android
         arch: android_arm64_v8a
 
@@ -605,15 +614,16 @@ jobs:
         ${{ env.QT_ROOT_DIR }}/bin/qt-cmake ../src \
           -DCMAKE_TOOLCHAIN_FILE:FILEPATH="${{ env.QT_ROOT_DIR }}/lib/cmake/Qt6/qt.toolchain.cmake" \
           -DNIGHTLY=$GRABBER_IS_NIGHTLY -DCOMMIT="$GITHUB_SHA" -DVERSION="$GRABBER_VERSION" \
-          -DCMAKE_BUILD_TYPE:STRING=Release \
+          -DCMAKE_BUILD_TYPE:STRING="${ANDROID_BUILD_TYPE}" \
           -DCMAKE_GENERATOR:STRING=Ninja \
           -DCMAKE_WARN_DEPRECATED=FALSE \
+          -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
           -DANDROID_SDK_ROOT="${ANDROID_HOME}" \
           -DANDROID_NDK_ROOT="${ANDROID_HOME}/ndk/${ANDROID_NDK_VERSION}" \
           -DQT_ANDROID_BUILD_ALL_ABIS=OFF \
           -DQT_ANDROID_ABIS:STRING="armeabi-v7a;arm64-v8a" \
           -DQT_HOST_PATH:PATH="${{ env.QT_ROOT_DIR }}/../gcc_64"
-        cmake --build . --config Release --target gui-qml_make_apk
+        cmake --build . --config "${ANDROID_BUILD_TYPE}" --target gui-qml_make_apk
 
     - name: Generate package
       run: |

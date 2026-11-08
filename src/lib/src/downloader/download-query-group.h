@@ -34,6 +34,7 @@ class DownloadQueryGroup : public DownloadQuery
 		QStringList postFiltering;
 		bool getBlacklisted;
 		bool galleriesCountAsOne = true;
+		bool pageOnly = false;
 		int progressVal = 0;
 		bool progressFinished = false;
 };

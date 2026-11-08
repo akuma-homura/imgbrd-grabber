@@ -77,6 +77,45 @@ Page {
                 icon.source: "/images/icons/search.png"
                 onClicked: searchTab.load()
             }
+
+            ToolButton {
+                icon.source: "/images/icons/download.png"
+                enabled: !!searchTab.site
+                onClicked: batchDialog.open()
+            }
+
+            ToolButton {
+                text: qsTr("Tasks")
+                onClicked: mainStackView.push(batchTasksPage)
+            }
+        }
+    }
+
+    Component {
+        id: batchTasksPage
+
+        BatchTasksScreen {
+            onClosed: mainStackView.pop()
+        }
+    }
+
+    BatchDownloadDialog {
+        id: batchDialog
+
+        onStartRequested: (currentPage, limit, byArtist, originals) => {
+            batchController.start(
+                searchTab.site.url,
+                pageLoader.query,
+                pageLoader.endpoint,
+                pageLoader.postFilter,
+                searchTab.page,
+                gSettings.imagesPerPage.value,
+                limit,
+                currentPage,
+                byArtist,
+                originals
+            )
+            mainStackView.push(batchTasksPage)
         }
     }
 
