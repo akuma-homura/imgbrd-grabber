@@ -526,6 +526,10 @@ jobs:
     needs: version
 
     env:
+      # Qt configures additional ABI builds in independent CMake processes.
+      # Inherit the compatibility floor for bundled legacy CMake projects
+      # (notably lib/vendor/lexbor) in every nested build tree.
+      CMAKE_POLICY_VERSION_MINIMUM: '3.5'
       QT_VERSION: 6.10.3
       GRABBER_VERSION: ${{ needs.version.outputs.version }}
       GRABBER_IS_NIGHTLY: ${{ needs.version.outputs.nightly }}
