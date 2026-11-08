@@ -217,8 +217,9 @@ bool BatchDownloadController::start(const QString &siteUrl, const QString &query
         }
         emit changed();
     });
-    recovery->setFuture(QtConcurrent::run([root = m_stageRoot]() {
-        return recoverStagedFiles(root);
+    const QString recoveryRoot = m_stageRoot;
+    recovery->setFuture(QtConcurrent::run([recoveryRoot]() {
+        return recoverStagedFiles(recoveryRoot);
     }));
     return true;
 }
