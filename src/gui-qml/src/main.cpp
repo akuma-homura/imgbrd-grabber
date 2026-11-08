@@ -6,6 +6,7 @@
 #include <QSettings>
 #include "analytics.h"
 #include "async-image-provider.h"
+#include "batch-download-controller.h"
 #include "functions.h"
 #include "language-loader.h"
 #include "loaders/gallery-search-loader.h"
@@ -108,6 +109,9 @@ int main(int argc, char *argv[])
 
 	NotificationUtils notificationUtils(nullptr);
 	engine.rootContext()->setContextProperty("notificationUtils", &notificationUtils);
+
+	BatchDownloadController batchController(&profile, &engine);
+	engine.rootContext()->setContextProperty("batchController", &batchController);
 
 	MainScreen mainScreen(&profile, &shareUtils, &engine);
 	engine.setObjectOwnership(&mainScreen, QQmlEngine::CppOwnership);
