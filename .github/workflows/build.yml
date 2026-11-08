@@ -288,6 +288,8 @@ jobs:
 
   macos:
     name: macOS
+    # Preserve the upstream macOS job, but skip it on this Android-focused fork.
+    if: github.repository == 'Bionus/imgbrd-grabber'
     runs-on: macos-14
     needs: version
 
