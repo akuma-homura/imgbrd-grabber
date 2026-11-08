@@ -193,6 +193,19 @@ void BatchDownloadController::onImageSaved(const QSharedPointer<Image> &image,
         return;
     }
 
+    const bool usable = result.result == Image::SaveResult::Saved
+        || result.result == Image::SaveResult::Copied
+        || result.result == Image::SaveResult::Moved
+        || result.result == Image::SaveResult::Linked
+        || result.result == Image::SaveResult::Shortcut
+        || result.result == Image::SaveResult::AlreadyExistsDisk;
+    if (!usable) {
+        ++m_failed;
+        ++m_processed;
+        emit changed();
+        return;
+    }
+
     const QFileInfo source(result.path);
     if (!source.isFile()) {
         ++m_failed;
