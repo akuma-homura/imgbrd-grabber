@@ -1,6 +1,7 @@
 #include "batch-download-controller.h"
 
 #include <QDir>
+#include <QDirIterator>
 #include <QFile>
 #include <QFileInfo>
 #include <QFutureWatcher>
@@ -54,6 +55,37 @@ int exportToPictures(const QString &source, const QString &relative)
     }
     return QFile::copy(source, destination) ? 1 : 0;
 #endif
+}
+}
+
+struct RecoveryStats
+{
+    int recovered = 0;
+    int failed = 0;
+};
+
+RecoveryStats recoverStagedFiles(const QString &root)
+{
+    RecoveryStats stats;
+    QDirIterator it(root, QDir::Files, QDirIterator::Subdirectories);
+    while (it.hasNext()) {
+        const QString path = it.next();
+        const QFileInfo info(path);
+        if (info.fileName() == QStringLiteral("pending-task.json")
+            || info.fileName().endsWith(QStringLiteral(".tmp"))
+            || info.fileName().endsWith(QStringLiteral(".part"))) {
+            continue;
+        }
+        const QString relative = QDir(root).relativeFilePath(path);
+        const int result = exportToPictures(path, relative);
+        if (result == 1 || result == 2) {
+            ++stats.recovered;
+            QFile::remove(path);
+        } else {
+            ++stats.failed;
+        }
+    }
+    return stats;
 }
 }
 
@@ -155,11 +187,13 @@ bool BatchDownloadController::start(const QString &siteUrl, const QString &query
 
     m_total = maxImages;
     m_processed = m_saved = m_skipped = m_failed = m_pendingExports = 0;
+    m_recovered = 0;
+    m_recovering = true;
     m_cancelled = false;
     m_batchFinished = false;
     m_running = true;
     m_error.clear();
-    m_status = QStringLiteral("Downloading");
+    m_status = QStringLiteral("Recovering previously downloaded files");
     m_profile->getSettings()->setValue("Save/downloadoriginals", originals);
     m_lastTask = {
         {"site", siteUrl}, {"query", query}, {"endpoint", endpoint},
@@ -168,7 +202,24 @@ bool BatchDownloadController::start(const QString &siteUrl, const QString &query
         {"organizeByArtist", organizeByArtist}, {"originals", originals}
     };
     writePendingTask(true);
-    QTimer::singleShot(0, m_downloader, &BatchDownloader::start);
+    auto *recovery = new QFutureWatcher<RecoveryStats>(this);
+    connect(recovery, &QFutureWatcher<RecoveryStats>::finished, this, [this, recovery]() {
+        const RecoveryStats stats = recovery->result();
+        m_recovered += stats.recovered;
+        m_failed += stats.failed;
+        m_recovering = false;
+        recovery->deleteLater();
+        if (m_running && !m_cancelled && m_downloader != nullptr) {
+            m_status = QStringLiteral("Downloading");
+            QTimer::singleShot(0, m_downloader, &BatchDownloader::start);
+        } else {
+            finishWhenReady();
+        }
+        emit changed();
+    });
+    recovery->setFuture(QtConcurrent::run([root = m_stageRoot]() {
+        return recoverStagedFiles(root);
+    }));
     return true;
 }
 
@@ -253,7 +304,7 @@ void BatchDownloadController::onBatchFinished()
 
 void BatchDownloadController::finishWhenReady()
 {
-    if (!m_running || !m_batchFinished || m_pendingExports > 0) {
+    if (!m_running || !m_batchFinished || m_pendingExports > 0 || m_recovering) {
         return;
     }
     m_running = false;
