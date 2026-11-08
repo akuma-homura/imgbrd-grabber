@@ -56,7 +56,6 @@ int exportToPictures(const QString &source, const QString &relative)
     return QFile::copy(source, destination) ? 1 : 0;
 #endif
 }
-}
 
 struct RecoveryStats
 {
