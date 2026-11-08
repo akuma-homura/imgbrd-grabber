@@ -8,7 +8,7 @@ Work-in-progress implementation on branch `feature/android-batch-download`. This
 - **Shared engine:** `BatchDownloadController` in `src/gui-qml/src/` uses the existing `BatchDownloader`, `DownloadQueryGroup` and `PackLoader`. The core now emits per-file save outcomes and supports a one-page limit.
 - **Artist classification:** the existing filename formatter uses `%website%/%artist%/%md5%.%ext%`. The `Save → Artist` settings control missing and multiple artist values.
 - **Scoped storage:** media is first downloaded to `QStandardPaths::AppDataLocation/grabber-batch`. On Android 10+ `MediaExporter.java` exports images to `Pictures/Grabber/<site>/<artist>/` using `MediaStore`; videos go to Movies/Grabber and miscellaneous files to Download/Grabber. On Android 9 or earlier the legacy Pictures directory is used.
-- **Task recovery:** one last search is persisted to JSON. Resume reruns its original query and MediaStore export skips matching filenames. It does **not** resume partial network transfers.
+- **Task recovery:** one last search is persisted to JSON. Before a new/retried search, complete staging files are re-exported to MediaStore and removed on success; the saved query is then rerun. It does **not** resume partial network transfers.
 
 ## Testing and device validation
 
@@ -26,7 +26,7 @@ Work-in-progress implementation on branch `feature/android-batch-download`. This
 - **Not yet implemented:** SAF custom-folder selection; file exports use fixed public media collections.
 - **Not yet implemented:** Android foreground service, reliably downloading after process death or with the app terminated.
 - **Not yet implemented:** a multi-task queued scheduler with arbitrary task history. Only one task is active at a time, and one last-search record is kept.
-- **Incomplete:** partial staged files from previously interrupted sessions are not independently re-exported before the search is retried, so certain global MD5 duplicate policies may skip an image whose earlier MediaStore export failed.
+- **Important:** incomplete `.tmp` or `.part` downloads are intentionally excluded from staged-file recovery; the search must fetch them again. MediaStore export still requires device testing under different MD5 settings.
 - **Global setting:** the Original checkbox updates Grabber's existing `Save/downloadoriginals` setting and therefore also affects subsequent single-image downloads.
 - Existing bulk engine uses nested event loops during page loading and needs real-device responsiveness testing.
 - No compiled APK is attached by this branch until the existing CI build runs and succeeds.
