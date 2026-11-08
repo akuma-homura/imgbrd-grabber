@@ -27,6 +27,7 @@ class BatchDownloadController : public QObject
     Q_PROPERTY(int saved READ saved NOTIFY changed)
     Q_PROPERTY(int skipped READ skipped NOTIFY changed)
     Q_PROPERTY(int failed READ failed NOTIFY changed)
+    Q_PROPERTY(int recovered READ recovered NOTIFY changed)
 
     public:
         explicit BatchDownloadController(Profile *profile, QObject *parent = nullptr);
@@ -41,6 +42,7 @@ class BatchDownloadController : public QObject
         int saved() const { return m_saved; }
         int skipped() const { return m_skipped; }
         int failed() const { return m_failed; }
+        int recovered() const { return m_recovered; }
 
         Q_INVOKABLE bool start(const QString &siteUrl, const QString &query,
             const QString &endpoint, const QString &postFilter,
@@ -71,12 +73,14 @@ class BatchDownloadController : public QObject
         bool m_resumable = false;
         bool m_cancelled = false;
         bool m_batchFinished = false;
+        bool m_recovering = false;
         int m_pendingExports = 0;
         int m_total = 0;
         int m_processed = 0;
         int m_saved = 0;
         int m_skipped = 0;
         int m_failed = 0;
+        int m_recovered = 0;
 };
 
 #endif // BATCH_DOWNLOAD_CONTROLLER_H
