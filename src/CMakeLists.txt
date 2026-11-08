@@ -1,4 +1,7 @@
-cmake_minimum_required(VERSION 3.2)
+# CMake 4 removed compatibility for projects declaring versions below 3.5.
+# Qt's Android multi-ABI builds configure this project in separate CMake processes,
+# so a command-line policy override on the parent build is not sufficient.
+cmake_minimum_required(VERSION 3.5)
 
 enable_testing()
 
