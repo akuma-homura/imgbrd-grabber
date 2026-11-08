@@ -38,6 +38,7 @@ void DownloadQueryGroup::write(QJsonObject &json, bool saveProgress) const
 	json["postFiltering"] = QJsonArray::fromStringList(postFiltering);
 	json["getBlacklisted"] = getBlacklisted;
 	json["galleriesCountAsOne"] = galleriesCountAsOne;
+	json["pageOnly"] = pageOnly;
 
 	json["site"] = site->url();
 	json["filename"] = QString(filename).replace("\\n", "\\\\n").replace("\n", "\\n");
@@ -58,6 +59,7 @@ bool DownloadQueryGroup::read(const QJsonObject &json, Profile *profile)
 	total = json["total"].toInt();
 	getBlacklisted = json["getBlacklisted"].toBool();
 	galleriesCountAsOne = json["galleriesCountAsOne"].toBool();
+	pageOnly = json["pageOnly"].toBool(false);
 
 	static const QRegularExpression nlExpr("(?<=^|[^\\\\])\\\\n");
 	filename = json["filename"].toString().replace(nlExpr, "\n").replace("\\\\n", "\\n");
@@ -108,6 +110,7 @@ bool operator==(const DownloadQueryGroup &lhs, const DownloadQueryGroup &rhs)
 		&& lhs.total == rhs.total
 		&& lhs.getBlacklisted == rhs.getBlacklisted
 		&& lhs.galleriesCountAsOne == rhs.galleriesCountAsOne
+		&& lhs.pageOnly == rhs.pageOnly
 		&& lhs.site == rhs.site
 		&& lhs.filename == rhs.filename
 		&& lhs.path == rhs.path;
