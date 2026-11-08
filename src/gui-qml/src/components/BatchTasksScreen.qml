@@ -44,6 +44,10 @@ Page {
             Layout.fillWidth: true
         }
         Label {
+            text: qsTr("Recovered staged files: %1").arg(batchController.recovered)
+            Layout.fillWidth: true
+        }
+        Label {
             text: qsTr("Saved: %1    Skipped: %2    Failed: %3")
                 .arg(batchController.saved).arg(batchController.skipped).arg(batchController.failed)
             Layout.fillWidth: true
