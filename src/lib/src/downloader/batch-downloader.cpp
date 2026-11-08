@@ -205,6 +205,8 @@ void BatchDownloader::loadImageFinished(const QSharedPointer<Image> &img, QList<
 	m_imageDownloaders[img]->deleteLater();
 	m_imageDownloaders.remove(img);
 
+	emit imageSaveFinished(img, result);
+
 	// Save error count to compare it later on
 	bool diskError = false;
 	const auto res = result.first().result;
